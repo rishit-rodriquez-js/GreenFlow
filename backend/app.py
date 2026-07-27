@@ -27,8 +27,9 @@ load_dotenv()
 os.environ["LANGCHAIN_TRACING_V2"] = os.getenv("LANGCHAIN_TRACING_V2", "true")
 os.environ["LANGCHAIN_ENDPOINT"] = os.getenv("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com")
 os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT", "GreenFlow-ETL")
-if "LANGCHAIN_API_KEY" not in os.environ and os.getenv("LANGSMITH_API_KEY"):
-    os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGSMITH_API_KEY", "")
+
+# Set active LangSmith API key
+
 
 app = FastAPI(
     title="GreenFlow ETL API",
