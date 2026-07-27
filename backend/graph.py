@@ -4,7 +4,7 @@ Defines the linear pipeline: START -> Extract -> Transform -> Load -> END.
 """
 
 from langgraph.graph import StateGraph, START, END
-from nodes import PipelineState, extract_node, transform_node, load_node
+from .nodes import PipelineState, extract_node, transform_node, load_node
 
 
 def build_etl_graph():

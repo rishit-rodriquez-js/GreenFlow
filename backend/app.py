@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, FileResponse, JSONResponse
 from dotenv import load_dotenv
 
-from graph import etl_pipeline
+from .graph import etl_pipeline
 from nodes import PipelineState
 
 load_dotenv()
