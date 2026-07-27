@@ -8,7 +8,7 @@ import time
 import pandas as pd
 from typing import TypedDict, Dict, Any, List, Optional
 from langsmith import traceable
-from utils import clean_dataframe
+from .utils import clean_dataframe
 
 
 class PipelineState(TypedDict):
