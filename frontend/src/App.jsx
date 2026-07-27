@@ -5,8 +5,45 @@ import ProcessingView from './components/ProcessingView';
 import ResultsView from './components/ResultsView';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
-// API Base URL - default to empty string for relative proxying in dev, or custom env
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+// Resolve Backend API URL dynamically
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '');
+  }
+  // If running on production host (Vercel, Netlify, etc.) and no env var set
+  if (typeof window !== 'undefined' && !['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+    return 'https://greenflow-2f6a.onrender.com';
+  }
+  return ''; // Relative path for Vite dev server proxy
+};
+
+const API_BASE = getApiBaseUrl();
+
+// Safe helper for handling API fetch & parsing non-JSON error responses gracefully
+async function safeFetchJson(url, options = {}) {
+  const response = await fetch(url, options);
+  const contentType = response.headers.get('content-type') || '';
+  const text = await response.text();
+
+  if (!response.ok) {
+    if (contentType.includes('application/json')) {
+      try {
+        const json = JSON.parse(text);
+        throw new Error(json.detail || json.message || `Server Error (${response.status})`);
+      } catch (e) {
+        throw new Error(e.message);
+      }
+    } else {
+      throw new Error(`Backend Error ${response.status}: The server returned non-JSON output. Ensure backend is awake on Render.`);
+    }
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    throw new Error(`Invalid JSON response received from ${url}`);
+  }
+}
 
 export default function App() {
   const [viewState, setViewState] = useState('upload'); // 'upload' | 'processing' | 'results' | 'error'
@@ -39,43 +76,29 @@ export default function App() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const uploadRes = await fetch(`${API_BASE}/api/upload`, {
+      const uploadData = await safeFetchJson(`${API_BASE}/api/upload`, {
         method: 'POST',
         body: formData,
       });
 
-      if (!uploadRes.ok) {
-        const errData = await uploadRes.json();
-        throw new Error(errData.detail || 'Failed to upload CSV file.');
-      }
-
-      const uploadData = await uploadRes.json();
       const currentJobId = uploadData.job_id;
       setJobId(currentJobId);
 
-      // Simulate node transition visuals while backend processes
+      // Visual node transition timing
       setTimeout(() => {
         setNodeStates({ extract: 'Completed', transform: 'Processing', load: 'Pending' });
-      }, 600);
+      }, 500);
 
       // 2. Trigger Pipeline Process
-      const processRes = await fetch(`${API_BASE}/api/process/${currentJobId}`, {
+      const processData = await safeFetchJson(`${API_BASE}/api/process/${currentJobId}`, {
         method: 'POST',
       });
-
-      if (!processRes.ok) {
-        const errData = await processRes.json();
-        throw new Error(errData.detail || 'Error executing ETL pipeline.');
-      }
-
-      const processData = await processRes.json();
 
       setNodeStates({ extract: 'Completed', transform: 'Completed', load: 'Processing' });
       setNodeLogs(processData.node_logs || []);
 
       // 3. Fetch Preview Data
-      const previewRes = await fetch(`${API_BASE}/api/preview/${currentJobId}`);
-      const previewData = await previewRes.json();
+      const previewData = await safeFetchJson(`${API_BASE}/api/preview/${currentJobId}`);
 
       setMetrics(processData.metrics || previewData.metrics || {});
       setRawData(previewData.raw_preview || []);
@@ -84,7 +107,7 @@ export default function App() {
       setTimeout(() => {
         setNodeStates({ extract: 'Completed', transform: 'Completed', load: 'Completed' });
         setViewState('results');
-      }, 700);
+      }, 600);
 
     } catch (err) {
       console.error(err);
@@ -103,12 +126,16 @@ export default function App() {
 
       // Fetch sample CSV blob
       const sampleRes = await fetch(`${API_BASE}/api/sample-csv`);
+      if (!sampleRes.ok) {
+        throw new Error(`Unable to fetch sample CSV. Status: ${sampleRes.status}`);
+      }
       const blob = await sampleRes.blob();
       const sampleFile = new File([blob], 'sample_input.csv', { type: 'text/csv' });
 
       await handleFileUpload(sampleFile);
     } catch (err) {
-      setErrorMsg('Failed to load sample CSV file.');
+      console.error(err);
+      setErrorMsg(err.message || 'Failed to load sample CSV file.');
       setViewState('error');
     }
   };
@@ -165,7 +192,7 @@ export default function App() {
             <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 mx-auto flex items-center justify-center mb-3">
               <AlertTriangle className="w-6 h-6" />
             </div>
-            <h3 class="text-lg font-bold text-dark-text mb-2">ETL Pipeline Failed</h3>
+            <h3 class="text-lg font-bold text-dark-text mb-2">ETL Pipeline Notice</h3>
             <p class="text-xs text-slate-500 mb-6">{errorMsg}</p>
             <button
               type="button"
