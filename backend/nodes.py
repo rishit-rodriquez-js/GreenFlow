@@ -19,9 +19,13 @@ if backend_dir not in sys.path:
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
 os.environ["LANGCHAIN_PROJECT"] = "GreenFlow-ETL"
-langsmith_key = os.getenv("LANGCHAIN_API_KEY") or os.getenv("LANGSMITH_API_KEY")
-os.environ["LANGCHAIN_API_KEY"] = langsmith_key
-os.environ["LANGSMITH_API_KEY"] = langsmith_key
+
+langsmith_key = os.getenv("LANGCHAIN_API_KEY") or os.getenv("LANGSMITH_API_KEY") or DEFAULT_LANGSMITH_KEY
+
+if langsmith_key:
+    os.environ["LANGCHAIN_API_KEY"] = str(langsmith_key)
+    os.environ["LANGSMITH_API_KEY"] = str(langsmith_key)
+
 
 from langsmith import traceable
 from utils import clean_dataframe
