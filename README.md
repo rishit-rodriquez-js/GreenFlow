@@ -183,14 +183,18 @@ Open `http://localhost:5173` in your browser.
 
 ---
 
-## 🧪 LangSmith Tracing Verification
+## 🧪 LangSmith Trace Verification
+
+Direct Project Dashboard Link:
+🔗 [GreenFlow-ETL Project on LangSmith](https://smith.langchain.com/o/80144ac4-6e86-4460-a98c-63354d99a68e/projects/p/83e91836-c1cf-464e-8912-ad1c36375bde)
 
 1. Go to [smith.langchain.com](https://smith.langchain.com/).
-2. Select project **GreenFlow-ETL**.
+2. Select Workspace `80144ac4-6e86-4460-a98c-63354d99a68e` and open Project **GreenFlow-ETL**.
 3. View step-by-step node execution traces:
    - **Extract Node**: Inputs byte size, outputs row count.
    - **Transform Node**: Inputs raw rows, outputs metric counts.
    - **Load Node**: Inputs cleaned rows, outputs final CSV length.
+
 
 ---
 
