@@ -3,8 +3,16 @@ GreenFlow ETL - LangGraph Workflow Graph Assembly.
 Defines the linear pipeline: START -> Extract -> Transform -> Load -> END.
 """
 
+import os
+import sys
+
+# Ensure backend directory is in sys.path for Render & local execution
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
 from langgraph.graph import StateGraph, START, END
-from .nodes import PipelineState, extract_node, transform_node, load_node
+from nodes import PipelineState, extract_node, transform_node, load_node
 
 
 def build_etl_graph():

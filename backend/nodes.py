@@ -3,12 +3,20 @@ GreenFlow ETL - LangGraph Node Definitions.
 Each node has a single responsibility and is decorated for LangSmith tracing.
 """
 
+import os
+import sys
 import io
 import time
 import pandas as pd
 from typing import TypedDict, Dict, Any, List, Optional
+
+# Ensure backend directory is in sys.path for Render & local execution
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
 from langsmith import traceable
-from .utils import clean_dataframe
+from utils import clean_dataframe
 
 
 class PipelineState(TypedDict):

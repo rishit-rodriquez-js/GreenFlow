@@ -4,14 +4,21 @@ Exposes REST APIs for CSV upload, execution, status tracking, preview, and downl
 """
 
 import os
+import sys
 import uuid
 from typing import Dict, Any
+
+# Ensure backend directory is in sys.path for Render & local execution
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, FileResponse, JSONResponse
 from dotenv import load_dotenv
 
-from .graph import etl_pipeline
+from graph import etl_pipeline
 from nodes import PipelineState
 
 load_dotenv()
